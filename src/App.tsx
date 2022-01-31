@@ -1,25 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import './App.css';
+import PrivateRoute from './components/PrivateRoute';
+import { useAuth } from './hooks/use-auth';
+import { SignIn } from './pages/SignIn';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+  const auth = useAuth();
+
+  if (auth.isLoading) {
+    return <div></div>;
+  }
+
+  const TopPage = () => (
+    <div>
+      <p>トップページ</p>
+      <p>{auth.isAuthenticated ? 'ログイン済' : '未ログイン'}</p>
+      <p>
+        <Link to="/signin">ログイン</Link>
+      </p>
     </div>
+  );
+
+  const PrivateDashboard = () => (
+    <PrivateRoute>
+      <div>ようこそ！ {auth.username} さん！</div>
+      <button onClick={() => auth.signOut()}>ログアウト</button>
+    </PrivateRoute>
+  );
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<TopPage />} />
+        <Route path="signin" element={<SignIn />} />
+        <Route path="dashboard" element={<PrivateDashboard />}></Route>
+        <Route path="*" element={<p>Page Not Found</p>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
